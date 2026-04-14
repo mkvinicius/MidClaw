@@ -1,0 +1,33 @@
+{
+  "name": "midclaw",
+  "version": "0.1.0",
+  "description": "AI security agent with living associative memory",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "midclaw": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx watch src/index.ts",
+    "start": "node dist/index.js",
+    "vault:test": "tsx src/vault/store.test.ts",
+    "lint": "eslint src/",
+    "typecheck": "tsc --noEmit"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "dependencies": {
+    "better-sqlite3": "^9.4.3",
+    "chalk": "^5.3.0",
+    "commander": "^12.1.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.11",
+    "@types/node": "^22.0.0",
+    "tsx": "^4.15.0",
+    "typescript": "^5.5.0"
+  }
+}

@@ -1,0 +1,28 @@
+version: "3.9"
+
+services:
+  brain:
+    build: .
+    ports:
+      - "7432:7432"
+    environment:
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      - MIDCLAW_MODEL=${MIDCLAW_MODEL:-claude-sonnet-4-6}
+      - BRAIN_HOST=0.0.0.0
+      - BRAIN_PORT=7432
+      - MIDCLAW_WORKSPACE=/data/workspace
+    volumes:
+      - midclaw-vault:/data/vault
+      - midclaw-workspace:/data/workspace
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:7432/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  midclaw-vault:
+  midclaw-workspace:

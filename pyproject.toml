@@ -12,6 +12,8 @@ dependencies = [
     "rich>=14.0.0",
     "tenacity>=9.0.0",
     "pyyaml>=6.0.0",
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.32.0",
 ]
 
 [project.optional-dependencies]
@@ -20,9 +22,7 @@ dev = [
     "pytest-asyncio>=0.24.0",
     "ruff>=0.6.0",
 ]
-sim = [
-    "oasis-social-agent>=0.1.0",
-]
+sim = []
 
 [project.scripts]
 midclaw-brain = "brain.main:main"

@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+dist/
+build/
+.env
+
+# Node / TypeScript
+node_modules/
+dist/
+*.js.map
+
+# Vault (local only)
+vault/
+!vault/.gitkeep
+
+# OS
+.DS_Store
+Thumbbs.db
+
+# Secrets
+*.env
+.secrets*
+credentials.*

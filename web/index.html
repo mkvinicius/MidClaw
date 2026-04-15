@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MidClaw — AI Security Agent</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔒</text></svg>">
+</head>
+<body>
+<div id="app">
+
+  <!-- Header -->
+  <header id="header">
+    <div class="logo">MID<span>CLAW</span></div>
+    <div id="status-pill">
+      <div class="dot"></div>
+      <span id="status-text">conectando...</span>
+    </div>
+    <div id="model-label">—</div>
+    <div class="spacer"></div>
+    <button class="btn btn-ghost" style="font-size:12px" onclick="clearChat()">Limpar chat</button>
+  </header>
+
+  <div id="main">
+
+    <!-- Sidebar -->
+    <nav id="sidebar">
+      <div class="nav-section">Principal</div>
+      <div class="nav-item active" data-tab="chat" onclick="switchTab('chat')">
+        <span class="icon">💬</span>
+        <span>Chat</span>
+      </div>
+      <div class="nav-item" data-tab="vault" onclick="switchTab('vault')">
+        <span class="icon">🗄️</span>
+        <span>Vault</span>
+      </div>
+      <div class="nav-section">Segurança</div>
+      <div class="nav-item" data-tab="sim" onclick="switchTab('sim')">
+        <span class="icon">⚔️</span>
+        <span>Simulação</span>
+      </div>
+      <div class="nav-item" data-tab="status" onclick="switchTab('status')">
+        <span class="icon">📡</span>
+        <span>Status</span>
+      </div>
+    </nav>
+
+    <!-- Content -->
+    <div id="content">
+
+      <!-- ─── CHAT ────────────────────────────────────── -->
+      <div id="tab-chat" class="tab-panel active">
+        <div id="chat-messages">
+          <div class="msg assistant" id="msg-welcome">
+            <div class="msg-avatar">🤖</div>
+            <div class="msg-bubble">
+              <strong>MidClaw</strong> — Agente de segurança com memória associativa.<br><br>
+              Posso ajudar com análise de ameaças, investigação de incidentes, busca no vault e simulações de ataque.<br><br>
+              <span style="color:var(--text); font-size:13px">💡 Dica: use o <strong>Vault</strong> para buscar notas e o <strong>Simulação</strong> para testar cenários de ataque.</span>
+            </div>
+          </div>
+        </div>
+        <div id="chat-input-area">
+          <form id="chat-form" onsubmit="sendMessage(event)">
+            <textarea
+              id="chat-input"
+              placeholder="Pergunte sobre ameaças, técnicas MITRE, incidentes..."
+              rows="1"
+              onkeydown="handleKey(event)"
+              oninput="autoResize(this)"
+            ></textarea>
+            <button type="submit" class="btn btn-primary" id="send-btn">
+              <span id="send-icon">↑</span>
+              <span id="send-label">Enviar</span>
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- ─── VAULT ───────────────────────────────────── -->
+      <div id="tab-vault" class="tab-panel">
+        <div id="vault-panel">
+          <div id="vault-controls">
+            <input
+              type="text" class="search-box" id="vault-search"
+              placeholder="Buscar notas... (FTS5)"
+              oninput="debounceSearch(this.value)"
+            >
+            <button class="btn btn-ghost" onclick="loadVault()">↺ Atualizar</button>
+          </div>
+          <div class="type-filters" id="type-filters">
+            <button class="filter-btn active" data-type="" onclick="filterType(this,'')">Todas</button>
+            <button class="filter-btn" data-type="incident" onclick="filterType(this,'incident')">Incidentes</button>
+            <button class="filter-btn" data-type="threat-actor" onclick="filterType(this,'threat-actor')">Atores</button>
+            <button class="filter-btn" data-type="technique" onclick="filterType(this,'technique')">Técnicas</button>
+            <button class="filter-btn" data-type="simulation" onclick="filterType(this,'simulation')">Simulações</button>
+          </div>
+          <div id="vault-stats"></div>
+          <div id="notes-grid">
+            <div class="empty-state"><div class="empty-icon">🗄️</div>Carregando vault...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ─── SIMULATION ──────────────────────────────── -->
+      <div id="tab-sim" class="tab-panel">
+        <div id="sim-panel">
+          <div id="sim-form-area">
+            <div class="form-group">
+              <label class="form-label">Ator de Ameaça</label>
+              <select class="form-control" id="sim-actor">
+                <option value="generic-ransomware">Ransomware Genérico</option>
+                <option value="apt29">APT29 (Cozy Bear)</option>
+                <option value="apt41">APT41 (Double Dragon)</option>
+                <option value="lazarus">Lazarus Group</option>
+                <option value="fin7">FIN7 (Carbanak)</option>
+                <option value="script-kiddie">Script Kiddie</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Cenário</label>
+              <textarea class="form-control" id="sim-scenario" rows="3"
+                placeholder="Ex: Campanha de ransomware contra hospital...">Ataque de ransomware em empresa de saúde</textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Ambiente Alvo</label>
+              <input type="text" class="form-control" id="sim-target"
+                placeholder="Ex: Rede Windows corporativa"
+                value="Rede Windows corporativa com Active Directory">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Nível do Defensor</label>
+              <select class="form-control" id="sim-defender">
+                <option value="novice">Iniciante</option>
+                <option value="average" selected>Intermediário</option>
+                <option value="expert">Especialista</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Passos de Ataque: <span id="steps-val">5</span></label>
+              <input type="range" class="form-control" id="sim-steps"
+                min="2" max="10" value="5"
+                oninput="document.getElementById('steps-val').textContent=this.value"
+                style="padding: 4px 0; cursor: pointer;">
+            </div>
+            <button class="btn btn-primary" style="width:100%; margin-top:8px" onclick="runSim()" id="sim-btn">
+              ⚔️ Executar Simulação
+            </button>
+            <div id="sim-error" style="margin-top:10px; color:var(--red); font-size:12px; display:none"></div>
+          </div>
+          <div id="sim-output-area">
+            <div id="sim-placeholder">
+              <div class="big-icon">⚔️</div>
+              <div>Configure o cenário e execute a simulação</div>
+              <div style="font-size:12px">O agente vai simular o comportamento do ator de ameaça passo a passo usando MITRE ATT&CK</div>
+            </div>
+            <div id="sim-result" style="display:none"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ─── STATUS ──────────────────────────────────── -->
+      <div id="tab-status" class="tab-panel">
+        <div id="status-panel">
+          <div class="status-grid" id="status-grid">
+            <div class="empty-state"><div class="spinner"></div></div>
+          </div>
+          <div style="text-align:center; margin-top: 8px;">
+            <button class="btn btn-ghost" onclick="loadStatus()">↺ Atualizar</button>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /main -->
+</div><!-- /app -->
+
+<!-- Note Modal -->
+<div id="note-modal">
+  <div id="note-modal-inner">
+    <button id="note-modal-close" onclick="closeNoteModal()">✕</button>
+    <div id="note-modal-content"></div>
+  </div>
+</div>
+
+<script src="/static/app.js"></script>
+</body>
+</html>

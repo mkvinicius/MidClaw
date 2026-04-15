@@ -1,0 +1,33 @@
+# MidClaw — Systemd service
+# Copie para: /etc/systemd/system/midclaw.service
+# Ative:
+#   systemctl daemon-reload
+#   systemctl enable midclaw
+#   systemctl start midclaw
+#   systemctl status midclaw
+
+[Unit]
+Description=MidClaw AI Security Agent
+After=network.target
+
+[Service]
+Type=simple
+User=ubuntu
+WorkingDirectory=/home/ubuntu/MidClaw
+EnvironmentFile=/home/ubuntu/MidClaw/.env
+Environment=BRAIN_HOST=127.0.0.1
+Environment=BRAIN_PORT=7432
+
+ExecStart=/home/ubuntu/MidClaw/.venv/bin/python brain/bridge.py
+
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+# Segurança (opcional, descomente se quiser isolar o processo)
+# NoNewPrivileges=true
+# PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
